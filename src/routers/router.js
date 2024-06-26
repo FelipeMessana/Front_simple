@@ -1,5 +1,10 @@
-import { View } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import StackScreen from "./stack";
 
 export default Router = () => {
-  return <View></View>;
+  return (
+    <NavigationContainer>
+      <StackScreen />
+    </NavigationContainer>
+  );
 };
