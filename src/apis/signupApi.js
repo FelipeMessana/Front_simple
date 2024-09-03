@@ -1,6 +1,6 @@
-export const loginApi = async (email, password) => {
+export const signupApi = async (email, password) => {
   try {
-    const response = await fetch("https://tuapi.com/login", {
+    const response = await fetch("https://tuapi.com/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -10,7 +10,7 @@ export const loginApi = async (email, password) => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error logging in:", error);
+    console.error("Error signing up:", error);
     throw error;
   }
 };

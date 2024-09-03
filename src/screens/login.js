@@ -8,6 +8,7 @@ import {
   Platform,
   Image,
   Alert,
+  TouchableOpacity, // Importa TouchableOpacity
 } from "react-native";
 import { Button } from "react-native-paper";
 import Input from "../components/input";
@@ -15,32 +16,32 @@ import PassInput from "../components/passinput";
 import { loginApi } from "../apis/login";
 import { save } from "../utils/storage";
 import { useNavigation } from "@react-navigation/native";
+import Icon from "react-native-vector-icons/MaterialIcons"; // Asegúrate de tener esta biblioteca instalada
 
 const Login = () => {
-  const [dni, setDni] = useState();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigation = useNavigation();
 
   const handleLogin = async () => {
-    if (!dni || !password) {
+    if (!email || !password) {
       Alert.alert(
         "Error",
-        "Por favor, ingresa el nombre de usuario y la contraseña."
+        "Por favor, ingresa el correo electrónico y la contraseña."
       );
       return;
     }
 
     try {
-      const data = await loginApi(dni, password);
-      console.log("Data:", data);
+      const data = await loginApi(email, password);
       if (data.success) {
+        await save("token", data.token); // Guardar el token en almacenamiento seguro
         Alert.alert("Perfecto", "Iniciaste sesión correctamente.");
-        await save("token", data.token);
         navigation.navigate("tabs");
       } else {
         Alert.alert(
           "Error",
-          "Usuario o contraseña incorrecta. Verifica tus credenciales e intenta nuevamente."
+          "Correo electrónico o contraseña incorrecta. Verifica tus credenciales e intenta nuevamente."
         );
       }
     } catch (error) {
@@ -51,6 +52,7 @@ const Login = () => {
       );
     }
   };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ImageBackground
@@ -60,23 +62,31 @@ const Login = () => {
       >
         <View style={styles.overlay} />
         <View style={styles.container}>
+          {/* Botón de navegación al home */}
+          <TouchableOpacity
+            style={styles.homeButton}
+            onPress={() => navigation.navigate("Home")}
+          >
+            <Icon name="home" size={30} color="#fff" />
+          </TouchableOpacity>
+
           <View style={styles.topSpace} />
           <View style={styles.logoContainer}>
             <Image
               source={require("../../assets/logo.jpg")}
               style={styles.logo}
             />
-            <Text style={styles.greetingText}>Hola soy russel!</Text>
+            <Text style={styles.greetingText}>Bienvenido a SportShop!</Text>
           </View>
           <View style={styles.inputContainer}>
             <Input
-              label="nombre de usuario"
-              icon="account"
-              value={dni}
-              onChange={setDni}
+              label="Correo Electrónico"
+              icon="email"
+              value={email}
+              onChange={setEmail}
             />
             <PassInput
-              label="ingrese su contraseña"
+              label="Contraseña"
               value={password}
               onChange={setPassword}
             />
@@ -84,16 +94,16 @@ const Login = () => {
           <View style={styles.buttonContainer}>
             <Button
               mode="contained"
-              onPress={handleLogin}
+              onPress={() => {
+                navigation.navigate("tabs");
+              }}
               style={styles.loginButton}
             >
-              ingresar
+              Ingresar
             </Button>
             <Button
               mode="outlined"
-              onPress={() => {
-                navigation.navigate("crearCuenta");
-              }}
+              onPress={() => navigation.navigate("crearCuenta")}
               style={styles.createAccountButton}
             >
               Crear Cuenta
@@ -108,7 +118,6 @@ const Login = () => {
 const styles = StyleSheet.create({
   container: {
     marginTop: Platform.OS === "android" && 25,
-
     flex: 1,
   },
   imageBackground: {
@@ -116,15 +125,15 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Fondo oscuro semi-transparente
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   topSpace: {
-    flex: 0.1, // Espacio superior ajustable
+    flex: 0.1,
   },
   logoContainer: {
     alignItems: "center",
     justifyContent: "center",
-    flex: 0.4, // Espacio para el logo ajustable
+    flex: 0.4,
   },
   logo: {
     width: 200,
@@ -134,15 +143,15 @@ const styles = StyleSheet.create({
   greetingText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "white", // Texto blanco sobre fondo oscuro
+    color: "white",
     marginBottom: 20,
   },
   inputContainer: {
-    flex: 0.3, // Espacio para los inputs ajustable
+    flex: 0.3,
     padding: 10,
   },
   buttonContainer: {
-    flex: 0.2, // Espacio para los botones ajustable
+    flex: 0.2,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -150,7 +159,13 @@ const styles = StyleSheet.create({
     width: "80%",
   },
   createAccountButton: {
-    marginTop: 10, // Margen superior ajustable
+    marginTop: 10,
+  },
+  homeButton: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    zIndex: 1, // Asegúrate de que el botón esté por encima de otros elementos
   },
 });
 

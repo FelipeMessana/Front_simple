@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   FlatList,
@@ -6,42 +6,43 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
-import { obtenermaterasapi } from "../apis/getmaterias";
-import { getToken } from "../utils/storage";
+import products from "../data/productsData"; // Importa los datos locales
 import { Card, Title, Paragraph, Appbar } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native"; // Importa useNavigation
 
-//obtener el token
-//solicitar la lista de materias
 const Home = () => {
-  const [materias, setMaterias] = useState([]);
+  const [displayedProducts, setDisplayedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const navigation = useNavigation(); // Usamos useNavigation para navegar
 
-  const fetchMaterias = useCallback(async () => {
+  // Simula la carga de datos locales
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const token = await getToken();
-      const response = await obtenermaterasapi(token); // Pasar userId aquí
-      console.log("Materias obtenidas:", response); // Verifica los datos recibidos
-      setMaterias(response.materias);
+      // Simula un retardo para la carga
+      setTimeout(() => {
+        setDisplayedProducts(products);
+        setLoading(false);
+        setRefreshing(false);
+      }, 1000);
     } catch (error) {
-      console.error("Error fetching materias:", error);
-    } finally {
+      console.error("Error fetching products:", error);
       setLoading(false);
       setRefreshing(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchMaterias();
-  }, [fetchMaterias]);
+    fetchProducts();
+  }, [fetchProducts]);
 
   const onRefresh = () => {
     setRefreshing(true);
-    fetchMaterias();
+    fetchProducts();
   };
 
-  if (loading && !refreshing) {
+  if (loading) {
     return (
       <View style={styles.loaderContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -49,22 +50,25 @@ const Home = () => {
     );
   }
 
-  console.log("Estado de materias después de la carga:", materias); // Verifica el estado de materias después de la carga
-
   return (
     <>
       <Appbar.Header>
-        <Appbar.Content title="Materias" />
+        <Appbar.Content title="Catálogo" />
+        <Appbar.Action
+          icon="cart"
+          onPress={() => navigation.navigate("Cart")} // Navega al carrito
+        />
       </Appbar.Header>
       <View style={styles.container}>
         <FlatList
-          data={materias}
-          keyExtractor={(item) => item.id_m} // Asegúrate de que item.id_m sea único y sea un string
+          data={displayedProducts}
+          keyExtractor={(item) => item.id.toString()} // Asegúrate de que item.id sea único y de tipo string
           renderItem={({ item }) => (
             <Card style={styles.card}>
               <Card.Content>
-                <Title style={styles.cardTitle}>{item.nombre_materia}</Title>
-                <Paragraph>ID: {item.id_m}</Paragraph>
+                <Title style={styles.cardTitle}>{item.name}</Title>
+                <Paragraph>Precio: ${item.price}</Paragraph>
+                <Paragraph>Categoría: {item.category}</Paragraph>
               </Card.Content>
             </Card>
           )}
